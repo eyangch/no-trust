@@ -1,0 +1,1 @@
+const socket = new WebSocket("ws://mc.eyangch.me:8000/ws");

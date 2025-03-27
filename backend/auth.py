@@ -1,23 +1,25 @@
-from websockets.asyncio.server import serve
-from websockets.exceptions import ConnectionClosedOK
+active = set()
+readers = {}
 
-class AuthServer:
-    async def handle_client(self, websocket):
-        addr = websocket.remote_address
-        print(f"Connection from {addr!r}")
-        while True:
-            try:
-                message = await websocket.recv()
-            except ConnectionClosedOK:
-                break
-        print(f"Close the connection from {addr!r}")
+def add(ip):
+    active.add(ip[0])
+    readers[ip[0]] = {}
+    print(f"Added IP {ip[0]}")
 
-    async def start(self, host, port):
-        self.server = await serve(self.handle_client, host, port)
-        async with self.server:
-            print(f"Serving on {host}:{port}")
-            await self.server.serve_forever()
+def remove(ip):
+    active.discard(ip[0])
+    for reader_arr in readers[ip[0]].values():
+        for reader in reader_arr:
+            reader.close()
+    del readers[ip[0]]
+    print(f"Removed IP {ip[0]}")
 
-    async def close(self):
-        self.server.close()
-        await self.server.wait_closed()
+def add_readers(ip, reader_arr):
+    readers[ip[0]][ip[1]] = reader_arr
+
+def remove_readers(ip):
+    if ip[0] in readers:
+        del readers[ip[0]][ip[1]]
+
+def exist(ip):
+    return ip[0] in active
