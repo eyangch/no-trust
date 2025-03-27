@@ -1,5 +1,4 @@
 from aiohttp import web
-import asyncio
 
 async def index(request):
     return web.FileResponse("frontend/index.html")

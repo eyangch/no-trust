@@ -1,7 +1,4 @@
 import asyncio
-from websockets.asyncio.server import serve
-from websockets.exceptions import ConnectionClosedOK
-import sys
 
 import backend
 import frontend
