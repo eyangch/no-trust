@@ -1,8 +1,15 @@
 import asyncio
 
 import backend.auth as IPAuth
+import data.db
 
 class ProxyServer:
+    def __init__(self, host, port, hidden_host, hidden_port):
+        self.host = host
+        self.port = port
+        self.hidden_host = hidden_host
+        self.hidden_port = hidden_port
+
     async def proxy(self, stdin, stdout):    
         while True:
             line = await stdin.read(1024)
@@ -19,18 +26,22 @@ class ProxyServer:
             source_writer.close()
             return
         print(f"proxying ip {ip[0]}")
-        target_reader, target_writer = await asyncio.open_connection("localhost", self.fwd_port)
+        target_reader, target_writer = await asyncio.open_connection(self.hidden_host, self.hidden_port)
         IPAuth.add_readers(ip, [source_writer, target_writer])
         await asyncio.gather(self.proxy(source_reader, target_writer), self.proxy(target_reader, source_writer))
         IPAuth.remove_readers(ip)
 
-    async def start(self, host, port, fwd_port):
-        self.fwd_port = fwd_port
-        self.server = await asyncio.start_server(self.handle_client, host, port)
+    async def start(self):
+        self.server = await asyncio.start_server(self.handle_client, self.host, self.port)
         async with self.server:
-            print(f"Serving on {host}:{port}")
+            print(f"Serving on {self.host}:{self.port}")
             await self.server.serve_forever()
 
     async def close(self):
         self.server.close()
         await self.server.wait_closed()
+
+proxy_servers = {}
+all_ports = data.db.get_all_ports("root")
+for port in all_ports:
+    proxy_servers[port["proxy_port"]] = ProxyServer("0.0.0.0", port["proxy_port"], "localhost", port["hidden_port"])

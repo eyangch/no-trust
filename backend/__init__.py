@@ -1,16 +1,14 @@
 import asyncio
 
-from backend.proxy import ProxyServer
-
-proxy_server = ProxyServer()
+from backend.proxy import proxy_servers
 
 async def run():
     await asyncio.gather(
-        proxy_server.start("0.0.0.0", 25565, 28888)
+        *[server.start() for server in proxy_servers.values()]
     )
 
 async def stop():
     print("\nClosing server")
     await asyncio.gather(
-        proxy_server.close()
+        *[server.close() for server in proxy_servers.values()]
     )

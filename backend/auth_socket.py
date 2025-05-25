@@ -1,8 +1,9 @@
 import aiohttp
 from aiohttp import web
+import json
 
 import backend.auth as IPAuth
-import data.token
+import backend.socket_handlers
 
 async def auth_socket(request):
     ws = web.WebSocketResponse()
@@ -12,27 +13,31 @@ async def auth_socket(request):
         print("invalid ws conn")
         return web.Response()
 
-    ip = request.get_extra_info("peername")
+    state = {
+        "authed": False,
+        "ip": request.get_extra_info("peername"),
+        "user": None
+    }
 
-    authenticated = False
+    handlers = {
+        "auth": backend.socket_handlers.handle_auth,
+        "change-pw": backend.socket_handlers.handle_change_pw,
+        "new-port": backend.socket_handlers.handle_new_port,
+        "get-ports": backend.socket_handlers.get_authed_ports
+    }
 
-    async for msg in ws:
-        if msg.type == aiohttp.WSMsgType.TEXT:
-            if not authenticated:
-                user = data.token.decode_jwt(msg.data)
-                if user is not None:
-                    authenticated = True
-                    IPAuth.add(ip)
-                    await ws.send_str("OK")
-                else:
-                    await ws.send_str("FAIL")
-        elif msg.type == aiohttp.WSMsgType.ERROR:
-            print('ws connection closed with exception %s' %
-                  ws.exception())
-            break
-
-    print('websocket connection closed')
-    if authenticated:
-        IPAuth.remove(ip)
+    try:
+        async for msg in ws:
+            if msg.type == aiohttp.WSMsgType.TEXT:
+                event = json.loads(msg.data)
+                await handlers[event["type"]](ws, state, event)
+            elif msg.type == aiohttp.WSMsgType.ERROR:
+                print('ws connection closed with exception %s' %
+                    ws.exception())
+                break
+    finally:
+        print('websocket connection closed')
+        if state["authed"]:
+            IPAuth.remove(state["ip"])
 
     return ws

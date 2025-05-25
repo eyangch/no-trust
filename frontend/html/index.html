@@ -1,15 +1,66 @@
 <!DOCTYPE HTML>
 <html>
     <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>no trust</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     </head>
-    <body>
-        <div id="not-login" hidden>
+    <body class="p-4">
+        <div id="not-login" class="text-center display-6" hidden>
             You are not logged in! <a href="/login">Login here</a>
         </div>
-        <div id="logged-in" hidden>
-            You are authed!
+        <div id="logged-in" class="container" hidden>
+            <div class="position-fixed top-0 end-0">
+                <button onclick="logout()">log out</button>
+            </div>
+            <div class="text-center display-6">
+                You are authenticated as <b><span id="user"></span></b>!
+            </div>
+            <hr/>
+            <div class="d-flex flex-column text-center">
+                <div class="p-1">
+                    <div class="fs-3">My Account</div>
+                    <div id="pass-no-match" class="text-danger" hidden>passwords don't match!</div>
+                    <div id="pass-change-fail" class="text-danger" hidden>password change failed</div>
+                    <div id="pass-changed" class="text-success" hidden>password changed!</div>
+                    <form action="javascript:void(0);">
+                        <div class="p-1">Change password: <input type="password" id="new-password-1"/></div>
+                        <div class="p-1">Confirm password: <input type="password" id="new-password-2"/></div>
+                        <button type="submit" onclick="change_pass()">change</button>
+                    </form>
+                </div>
+                <hr/>
+                <div class="p-1">
+                    <div class="fs-3">Ports</div>
+                    <div id="add-new-port">
+                        <form action="javascript:void(0);">
+                            <div class="p-1">proxy port: <input type="number" id="new-proxy-port"/></div>
+                            <div class="p-1">hidden port: <input type="number" id="new-hidden-port"/></div>
+                            <button type="submit" onclick="add_port()">add port</button>
+                        </form>
+                    </div>
+                    <table class="table w-auto m-auto">
+                        <thead>
+                            <tr>
+                                <th>Proxy Port</th>
+                                <th>Hidden Port</th>
+                            </tr>
+                        </thead>
+                        <tbody id="port-table-body">
+                            <tr>
+                                <td>test</td>
+                                <td>test2</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <hr/>
+                <div class="p-1">
+                    <div class="fs-3">Account Management</div>
+                </div>
+            </div>
         </div>
         <script src="static/socket.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     </body>
 </html>
